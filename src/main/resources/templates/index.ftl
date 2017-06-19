@@ -136,15 +136,11 @@
     </#if>
 </#if>
 
-
 <div class="row" id="pagina">
     <div class="col-md-offset-5 col-md-7">
         <ul id="pagin">
         </ul>
     </div>
-
-
-
 
     <script type="text/javascript">
 
