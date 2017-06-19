@@ -1,19 +1,26 @@
 package com.pucmm.practica4.main;
 
+import com.google.gson.JsonObject;
+import com.pucmm.practica4.WebSocket.webSocket;
 import com.pucmm.practica4.entidades.*;
 import com.pucmm.practica4.services.*;
 import com.sun.org.apache.regexp.internal.RE;
 import freemarker.template.Configuration;
 
 import org.hibernate.criterion.LikeExpression;
+import org.json.JSONObject;
 import spark.ModelAndView;
 import spark.Session;
+
 import spark.template.freemarker.FreeMarkerEngine;
 
+import java.io.IOException;
 import java.sql.*;
 import java.util.*;
 import java.util.Date;
+import java.util.concurrent.ConcurrentHashMap;
 
+import static j2html.TagCreator.p;
 import static java.lang.Class.forName;
 import static spark.Spark.*;
 import static spark.debug.DebugScreen.enableDebugScreen;
@@ -23,7 +30,7 @@ import static spark.route.HttpMethod.*;
  * Created by john on 03/06/17.
  */
 public class Main {
-
+    public static Map<org.eclipse.jetty.websocket.api.Session, String> usuariosConectados = new ConcurrentHashMap<>();
     public static void main(String[] args)throws SQLException {
 
         //Seteando el puerto en Heroku
@@ -32,6 +39,7 @@ public class Main {
 
         //indicando los recursos publicos.
         staticFiles.location("/publico");
+        webSocket("/mensajeServidor", webSocket.class);
 
         //Starting database
         BootStrapServices.getInstancia().init();
@@ -669,6 +677,15 @@ public class Main {
             response.redirect("/ver/articulo/"+request.params("articulo"));
             return "";
         });
+//_____________________________________________Mensaje Servidor_______________________________________
+
+        post ("/enviarMensaje", (request, response) ->{
+            String mensaje = request.queryParams("mensaje");
+            String sender = request.queryParams("sender");
+            broadCastMessage(sender,mensaje);
+            return "Enviando mensaje: "+ mensaje;
+        });
+
 
     }  /**
      * Metodo para setear el puerto en Heroku
@@ -680,5 +697,32 @@ public class Main {
             return Integer.parseInt(processBuilder.environment().get("PORT"));
         }
         return 4567; //return default port if heroku-port isn't set (i.e. on localhost)
+    }
+
+
+    public static void broadCastMessage(String sender, String message){
+        usuariosConectados.keySet().stream().filter(org.eclipse.jetty.websocket.api.Session::isOpen).forEach(
+                session -> {
+                    try{
+                        session.getRemote().sendString(String.valueOf(new JSONObject()
+                                .put("userMessage",createHtmlMessageFromSender(sender,message))
+                                .put("userlist", usuariosConectados.values())
+
+                        ));
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+                });
+    }
+
+    private static String createHtmlMessageFromSender(String sender, String message) {
+        for(Map.Entry<org.eclipse.jetty.websocket.api.Session,String > sessionConectada: usuariosConectados.entrySet()){
+           try{
+               sessionConectada.getKey().getRemote().sendString(p(message).withClass("rojo").render());
+           }catch (IOException ex){
+               ex.printStackTrace();
+           }
+        }
+        return "";
     }
 }

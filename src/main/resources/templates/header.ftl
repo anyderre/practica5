@@ -9,6 +9,7 @@
     <link rel="stylesheet" type="text/css" href="/css/jquery-ui.min.css">
     <link rel="stylesheet" type="text/css" href="/css/jquery.bootpag.min.js">
     <link rel="stylesheet" type="text/css" href="/css/miEstilo.css">
+    <link rel="stylesheet" type="text/css" href="/css/style.css">
     <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet">
 
 

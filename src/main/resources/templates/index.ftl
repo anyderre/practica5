@@ -1,5 +1,63 @@
 <#include "header.ftl">
 <#include "nav.ftl">
+<a class="btn icon-btn btn-default" id="chat" href="#">
+    <span class="glyphicon glyphicon-comment"></span> </a>
+
+<div class="container bootstrap snippet">
+    <div class="row">
+        <div class="col-md-4 col-md-offset-4">
+            <div class="portlet portlet-default">
+                <div class="portlet-heading">
+                    <div class="portlet-title">
+                        <h4><i class="fa fa-circle text-green"></i> Jane Smith</h4>
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+                <div id="chat" class="panel-collapse collapse in">
+                    <div>
+                        <div class="portlet-body chat-widget" style="overflow-y: auto; width: auto; height: 300px;">
+                            <div class="row">
+                                <div class="col-lg-12">
+                                    <p class="text-center text-muted small">January 1, 2014 at 12:23 PM</p>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-lg-12">
+                                    <div class="media">
+                                        <a class="pull-left" href="#">
+                                            <img class="media-object img-circle" src="https://lorempixel.com/30/30/people/1/" alt="">
+                                        </a>
+                                        <div class="media-body">
+                                            <h4 class="media-heading">Jane Smith
+                                                <span class="small pull-right">12:23 PM</span>
+                                            </h4>
+                                            <p>Hi, I wanted to make sure you got the latest product report. Did Roddy get it to you?</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <hr>
+
+                        </div>
+                    </div>
+                    <div class="portlet-footer">
+                        <form role="form">
+                            <div class="form-group">
+                                <textarea class="form-control" placeholder="Enter message..."></textarea>
+                            </div>
+                            <div class="form-group">
+                                <button type="button" class="btn btn-default pull-right">Send</button>
+                                <div class="clearfix"></div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /.col-md-4 -->
+    </div>
+</div>
+
 
 <#if articulos??>
     <#if articulos?size!=0>
@@ -57,6 +115,8 @@
 
             </div>
 
+
+
         </div>
 
         <br>
@@ -75,11 +135,16 @@
         </#if>
     </#if>
 </#if>
+
+
 <div class="row" id="pagina">
     <div class="col-md-offset-5 col-md-7">
         <ul id="pagin">
         </ul>
     </div>
+
+
+
 
     <script type="text/javascript">
 
@@ -97,6 +162,18 @@
             }
 
         }
+        $(document).ready(function () {
+            $('#chat').click(function () {
+                if ( $( ".bootstrap" ).is( ":hidden" ) ) {
+                    $(".bootstrap" ).slideDown( "slow" );
+                    $(".line-content").fadeTo('slow', 0.5);
+                } else {
+                    $( ".bootstrap" ).slideUp();
+                    $(".line-content").fadeTo('slow',1);
+                }
+            })
+        });
+
 
     </script>
 <#include "footer.ftl">
