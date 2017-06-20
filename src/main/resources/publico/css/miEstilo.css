@@ -210,3 +210,6 @@ body{
     z-index: 1;
     display: none;
 }
+.pagesNumber:hover{
+    cursor: pointer;
+}

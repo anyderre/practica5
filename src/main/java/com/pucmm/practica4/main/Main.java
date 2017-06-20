@@ -1,14 +1,10 @@
 package com.pucmm.practica4.main;
 
-import com.google.gson.JsonObject;
-import com.pucmm.practica4.WebSocket.webSocket;
+import com.pucmm.practica4.WebSocket.webSocketHandler;
 import com.pucmm.practica4.entidades.*;
 import com.pucmm.practica4.services.*;
-import com.sun.org.apache.regexp.internal.RE;
 import freemarker.template.Configuration;
 
-import org.hibernate.criterion.LikeExpression;
-import org.json.JSONObject;
 import spark.ModelAndView;
 import spark.Session;
 
@@ -24,7 +20,6 @@ import static j2html.TagCreator.p;
 import static java.lang.Class.forName;
 import static spark.Spark.*;
 import static spark.debug.DebugScreen.enableDebugScreen;
-import static spark.route.HttpMethod.*;
 
 /**
  * Created by john on 03/06/17.
@@ -39,7 +34,7 @@ public class Main {
 
         //indicando los recursos publicos.
         staticFiles.location("/publico");
-        webSocket("/mensajeServidor", webSocket.class);
+        webSocket("/mensajeServidor", webSocketHandler.class);
 
         //Starting database
         BootStrapServices.getInstancia().init();
@@ -129,7 +124,7 @@ public class Main {
             attributes.put("size", size);
             attributes.put("titulo", "Welcome");
             // attributes.put("articulos", articulos);
-            return new ModelAndView(attributes, "index.ftl");
+            return new ModelAndView(attributes, "pages.ftl");
         }, freeMarkerEngine);
 
 
@@ -682,7 +677,7 @@ public class Main {
         post ("/enviarMensaje", (request, response) ->{
             String mensaje = request.queryParams("mensaje");
             String sender = request.queryParams("sender");
-            broadCastMessage(sender,mensaje);
+            createHtmlMessageFromSender(sender,mensaje);
             return "Enviando mensaje: "+ mensaje;
         });
 
@@ -700,25 +695,10 @@ public class Main {
     }
 
 
-    public static void broadCastMessage(String sender, String message){
-        usuariosConectados.keySet().stream().filter(org.eclipse.jetty.websocket.api.Session::isOpen).forEach(
-                session -> {
-                    try{
-                        session.getRemote().sendString(String.valueOf(new JSONObject()
-                                .put("userMessage",createHtmlMessageFromSender(sender,message))
-                                .put("userlist", usuariosConectados.values())
-
-                        ));
-                    }catch (Exception e){
-                        e.printStackTrace();
-                    }
-                });
-    }
-
-    private static String createHtmlMessageFromSender(String sender, String message) {
+    public static String createHtmlMessageFromSender(String sender, String message) {
         for(Map.Entry<org.eclipse.jetty.websocket.api.Session,String > sessionConectada: usuariosConectados.entrySet()){
            try{
-               sessionConectada.getKey().getRemote().sendString(p(message).withClass("rojo").render());
+               sessionConectada.getKey().getRemote().sendString(sender+","+message);
            }catch (IOException ex){
                ex.printStackTrace();
            }
