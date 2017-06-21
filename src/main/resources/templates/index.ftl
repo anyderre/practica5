@@ -1,11 +1,8 @@
 <#include "header.ftl">
 <#include "nav.ftl">
 
-
 <a class="btn icon-btn btn-default" id="chat" href="#">
     <span class="glyphicon glyphicon-comment"></span> </a>
-
-
 
 <div class="container bootstrap snippet">
     <div class="row">
@@ -15,7 +12,7 @@
                     <div class="portlet-title">
                     </div>
                     <div class="portlet-widgets">
-                        <input type="text" id="nombre" placeholder="Nombre">
+                        <input style="color: black" type="text" id="nombre" placeholder="Nombre">
                         <input type="button" class="btn btn-primary" id="enter" value="Enter"/>
                     </div>
                     <div class="clearfix"></div>
@@ -144,7 +141,7 @@
         </#if>
     </#if>
 </#if>
-
+</div>
     <div class="row" id="pagina">
         <div class="col-md-offset-5 col-md-7">
             <ul id="pagin">
@@ -189,6 +186,6 @@
             });
 
         </script>
-</div>
+
 
 <#include "footer.ftl">
