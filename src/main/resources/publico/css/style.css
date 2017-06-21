@@ -166,3 +166,9 @@
 .text-red {
     color: #e74c3c;
 }
+
+.bootstrap{
+    z-index: 1;
+    display: none;
+    padding-bottom: 15px;
+}

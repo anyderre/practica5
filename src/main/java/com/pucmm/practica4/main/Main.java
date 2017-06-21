@@ -1,5 +1,6 @@
 package com.pucmm.practica4.main;
 
+import org.json.JSONObject;
 import com.pucmm.practica4.WebSocket.webSocketHandler;
 import com.pucmm.practica4.entidades.*;
 import com.pucmm.practica4.services.*;
@@ -8,33 +9,40 @@ import freemarker.template.Configuration;
 import spark.ModelAndView;
 import spark.Session;
 
+
+import spark.Spark;
 import spark.template.freemarker.FreeMarkerEngine;
 
 import java.io.IOException;
 import java.sql.*;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static j2html.TagCreator.p;
+import static j2html.TagCreator.*;
 import static java.lang.Class.forName;
 import static spark.Spark.*;
-import static spark.debug.DebugScreen.enableDebugScreen;
+//import static spark.debug.DebugScreen.enableDebugScreen;
 
 /**
  * Created by john on 03/06/17.
  */
 public class Main {
-    public static Map<org.eclipse.jetty.websocket.api.Session, String> usuariosConectados = new ConcurrentHashMap<>();
+    public static List<org.eclipse.jetty.websocket.api.Session> usuariosConectados = new ArrayList<>();
+
     public static void main(String[] args)throws SQLException {
 
         //Seteando el puerto en Heroku
-        port(getHerokuAssignedPort());
-        enableDebugScreen();
+        //port(getHerokuAssignedPort());
+        //enableDebugScreen();
 
         //indicando los recursos publicos.
         staticFiles.location("/publico");
+        //Debe ir antes de abrir alguna ruta.
         webSocket("/mensajeServidor", webSocketHandler.class);
+        init();
+
 
         //Starting database
         BootStrapServices.getInstancia().init();
@@ -506,47 +514,47 @@ public class Main {
             return "";
         });
 //-________________________________________________likes && dislikes for Comentario______________________________________________
-    before("/likes/:id/:articulo", (request, response) -> {
-        Usuario usuario = request.session(true).attribute("usuario");
-        if (usuario == null) {
-            response.redirect("/login");
-        }
-    });
+        before("/likes/:id/:articulo", (request, response) -> {
+            Usuario usuario = request.session(true).attribute("usuario");
+            if (usuario == null) {
+                response.redirect("/login");
+            }
+        });
 
-    get("/likes/:id/:articulo",(request, response) -> {
-        Usuario usuario = request.session(true).attribute("usuario");
-        Boolean esta=false;
-       ComentarioServices comentarioServices = ComentarioServices.getInstancia();
-       Comentario comentario= comentarioServices.find(Long.parseLong(request.params("id")));
+        get("/likes/:id/:articulo",(request, response) -> {
+            Usuario usuario = request.session(true).attribute("usuario");
+            Boolean esta=false;
+            ComentarioServices comentarioServices = ComentarioServices.getInstancia();
+            Comentario comentario= comentarioServices.find(Long.parseLong(request.params("id")));
 
 
-        LikesServices likesServices = LikesServices.getInstancia();
-        DislikeServices dislikeServices =DislikeServices.getInstancia();
+            LikesServices likesServices = LikesServices.getInstancia();
+            DislikeServices dislikeServices =DislikeServices.getInstancia();
 
-        Likes like = new Likes();
-        List<Likes> likes = likesServices.findAllByComentario(comentario);
-        List<Dislike> dislikes = dislikeServices.findAllByComentario(comentario);
+            Likes like = new Likes();
+            List<Likes> likes = likesServices.findAllByComentario(comentario);
+            List<Dislike> dislikes = dislikeServices.findAllByComentario(comentario);
 
-       for (Likes like1 : likes){
-           if (like1.getAutor().getUsername().equals(usuario.getUsername())){
-               esta=true;
-           }
-       }
+            for (Likes like1 : likes){
+                if (like1.getAutor().getUsername().equals(usuario.getUsername())){
+                    esta=true;
+                }
+            }
 
-       for(Dislike dislike : dislikes){
-           if (dislike.getAutor().getUsername().equals(usuario.getUsername())){
-               dislikeServices.delete(dislike.getId());
-           }
-       }
-       if(!esta){
-           like.setAutor(usuario);
-           like.setComentario(comentario);
-           likesServices.crear(like);
-       }
+            for(Dislike dislike : dislikes){
+                if (dislike.getAutor().getUsername().equals(usuario.getUsername())){
+                    dislikeServices.delete(dislike.getId());
+                }
+            }
+            if(!esta){
+                like.setAutor(usuario);
+                like.setComentario(comentario);
+                likesServices.crear(like);
+            }
 
-       response.redirect("/ver/articulo/"+request.params("articulo"));
-       return "";
-    });
+            response.redirect("/ver/articulo/"+request.params("articulo"));
+            return "";
+        });
 
         before("/dislikes/:id/:articulo", (request, response) -> {
             Usuario usuario = request.session(true).attribute("usuario");
@@ -674,11 +682,11 @@ public class Main {
         });
 //_____________________________________________Mensaje Servidor_______________________________________
 
-        post ("/enviarMensaje", (request, response) ->{
+
+        get("/enviarMensaje",(request, response) ->{
             String mensaje = request.queryParams("mensaje");
-            String sender = request.queryParams("sender");
-            createHtmlMessageFromSender(sender,mensaje);
-            return "Enviando mensaje: "+ mensaje;
+            createHtmlMessageFromSender(mensaje, request.params("usuario"));
+            return "Enviando mensaje: "+mensaje;
         });
 
 
@@ -694,15 +702,59 @@ public class Main {
         return 4567; //return default port if heroku-port isn't set (i.e. on localhost)
     }
 
-
-    public static String createHtmlMessageFromSender(String sender, String message) {
-        for(Map.Entry<org.eclipse.jetty.websocket.api.Session,String > sessionConectada: usuariosConectados.entrySet()){
-           try{
-               sessionConectada.getKey().getRemote().sendString(sender+","+message);
-           }catch (IOException ex){
-               ex.printStackTrace();
-           }
+    public static void createHtmlMessageFromSender(String sender, String message) {
+        for(org.eclipse.jetty.websocket.api.Session sesionConectada : usuariosConectados){
+            try{
+                sesionConectada.getRemote().sendString(p(message).render());
+            }catch (IOException ex){
+                ex.printStackTrace();
+            }
         }
-        return "";
+
     }
+
+    //Sends a message from one user to all users, along with a list of current usernames
+   /* public static void broadcastMessage(String sender, String message) {
+        userUsernameMap.keySet().stream().filter(org.eclipse.jetty.websocket.api.Session::isOpen).forEach(session -> {
+            try {
+                session.getRemote().sendString(String.valueOf(new JSONObject()
+                        .put("userMessage", createHtmlMessageFromSender(sender, message))
+                        .put("userlist", userUsernameMap.values())
+                ));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }*/
+
+    //Builds a HTML element with a sender-name, a message, and a timestamp,
+   /* private static String createHtmlMessageFromSender(String sender, String message) {
+        return article(
+                b(sender + " says:"),
+                span(attrs(".timestamp"), new SimpleDateFormat("HH:mm:ss").format(new Date())),
+                p(message)
+        ).render();
+
+
+    }*/
+
+
+
+
+    /**
+     * Permite enviar un mensaje al cliente.
+     * Ver uso de la librería: https://j2html.com/
+     * @param mensaje
+     * @param color
+     */
+/*    public static void enviarMensajeAClientesConectados(String mensaje, String color){
+        for(org.eclipse.jetty.websocket.api.Session sesionConectada : usuariosConectados){
+            try {
+                sesionConectada.getRemote().sendString(p(mensaje).withClass(color).render());
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }*/
 }

@@ -12,33 +12,43 @@ import java.io.IOException;
  */
 @WebSocket
 public class webSocketHandler {
-    private String sender, message;
+
+    /**
+     * Una vez conectado el cliente se activa este metodo.
+     * @param usuario
+     */
+
     @OnWebSocketConnect
     public void conectando(Session usuario){
-        System.out.println("Conectando usuario: "+ usuario.getLocalAddress().getAddress().toString());
-        Main.usuariosConectados.put(usuario, "klk");
-        Main.createHtmlMessageFromSender(sender="Server", message=(usuario.getLocalAddress().getAddress().toString()+" se junta al chat"));
+        System.out.println("Conectando Usuario: "+usuario.getLocalAddress().getAddress().toString());
+        Main.usuariosConectados.add(usuario);
     }
+
+    /**
+     * Una vez cerrado la conexión, es ejecutado el metodo anotado
+     * @param usuario
+     * @param statusCode
+     * @param reason
+     */
     @OnWebSocketClose
-    public void cerrandoConexion(Session usuario ){
-        String username= Main.usuariosConectados.get(usuario);
-        System.out.println("Desconectando usuario: "+ usuario.getLocalAddress().getAddress().toString());
+    public void cerrandoConexion(Session usuario, int statusCode, String reason) {
+        System.out.println("Desconectando el usuario: "+usuario.getLocalAddress().getAddress().toString());
         Main.usuariosConectados.remove(usuario);
-        Main.createHtmlMessageFromSender(sender="Server", message=(username+" dejo el chat"));
     }
+
+    /**
+     * Una vez recibido un mensaje es llamado el metodo anotado.
+     * @param usuario
+     * @param message
+     */
     @OnWebSocketMessage
-    public void recibiendoMensaje(Session usuario, String message){
-        System.out.println("Recibiendo del cliente: "+ usuario.getLocalAddress().getAddress().toString());
-        try{
-            usuario.getRemote().sendString("Mensaje recibido Cliente");
-            Main.createHtmlMessageFromSender(Main.usuariosConectados.get(usuario), message);
-        }catch (IOException iex){
-            iex.printStackTrace();
-        }
+    public void recibiendoMensaje(Session usuario, String message) {
+        System.out.println("Recibiendo del cliente: "+usuario.getLocalAddress().getAddress().toString()+" - Mensaje"+message);
+
+            //Enviar un simple mensaje al cliente que mando al servidor..
+            //usuario.getRemote().sendString("Mensaje enviado al Servidor: "+message);
+            //mostrando a todos los clientes
+            Main.createHtmlMessageFromSender("klk",message);
     }
-    @OnWebSocketError
-        public void error(Session session, Throwable t) {
-        Main.usuariosConectados.remove(session);
-        System.err.println("Error on session ");
-    }
+
 }

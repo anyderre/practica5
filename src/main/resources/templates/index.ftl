@@ -1,57 +1,73 @@
 <#include "header.ftl">
 <#include "nav.ftl">
-<div class="principal">
-    <a class="btn icon-btn btn-default" id="chat" href="#">
-        <span class="glyphicon glyphicon-comment"></span> </a>
 
-    <div class="container bootstrap snippet">
-        <div class="row">
-            <div class="col-md-4 col-md-offset-4">
-                <div class="portlet portlet-default">
-                    <div class="portlet-heading">
-                        <div class="portlet-title">
-                            <input type="text" id="nombre">
-                        </div>
-                        <div class="clearfix"></div>
+
+<a class="btn icon-btn btn-default" id="chat" href="#">
+    <span class="glyphicon glyphicon-comment"></span> </a>
+
+
+
+<div class="container bootstrap snippet">
+    <div class="row">
+        <div class="col-md-4 col-md-offset-4">
+            <div class="portlet portlet-default">
+                <div class="portlet-heading">
+                    <div class="portlet-title">
                     </div>
-                    <div id="chat" class="panel-collapse collapse in">
-                        <div>
-                            <div class="portlet-body chat-widget" style="overflow-y: auto; width: auto; height: 300px;">
-                                <div class="row">
-                                    <div class="col-lg-12">
-                                        <p class="text-center text-muted small">January 1, 2014 at 12:23 PM</p>
-                                    </div>
+                    <div class="portlet-widgets">
+                        <input type="text" id="nombre" placeholder="Nombre">
+                        <input type="button" class="btn btn-primary" id="enter" value="Enter"/>
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+                <div id="chat" class="panel-collapse collapse in">
+                    <div>
+                        <div class="portlet-body chat-widget" style="overflow-y: auto; width: auto; height: 300px;">
+                            <div class="row">
+                                <div class="col-lg-12">
+                                    <p id='fechaDehoy' class="text-center text-muted small"></p>
                                 </div>
-                                <div class="row">
+
+                                <div class="row" id="del">
                                     <div class="col-lg-12">
                                         <div class="media">
-
+                                            <a class="pull-left" href="#">
+                                                <img class="media-object img-circle" src="" alt="">
+                                            </a>
+                                            <div class="media-body">
+                                                <h4 class="media-heading">
+                                                    <span class="small pull-right"></span>
+                                                </h4>
+                                                <p></p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                                <hr>
 
                             </div>
+
                         </div>
-                        <div class="portlet-footer">
-                            <form role="form">
-                                <div class="form-group">
-                                    <textarea class="form-control" class="message" placeholder="Enter message..."></textarea>
-                                </div>
-                                <div class="form-group">
-                                    <button type="button" class="btn btn-default pull-right">Send</button>
-                                    <div class="clearfix"></div>
-                                </div>
-                            </form>
-                        </div>
+                    </div>
+                    <div class="portlet-footer">
+                        <form role="form">
+                            <div class="form-group">
+                                <textarea class="form-control" id="message" placeholder="Enter message..."></textarea>
+                            </div>
+                            <div class="form-group">
+                                <button type="button" id="send" class="btn btn-default pull-right">Send</button>
+                                <div class="clearfix"></div>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
-            <!-- /.col-md-4 -->
         </div>
+        <!-- /.col-md-4 -->
     </div>
+</div>
 
 
+<div class="principal">
 <#if articulos??>
     <#if articulos?size!=0>
         <#list articulos as articulo>
@@ -139,7 +155,15 @@
 
         <script type="text/javascript">
 
+            $(document).ready(function () {
+                var currentDate = new Date();
+                var day = currentDate.getDate();
+                var month = currentDate.getMonth() + 1;
+                var year = currentDate.getFullYear();
 
+                $('#fechaDehoy').append("<b>" + day + "/" + month + "/" + year + "</b>");
+            });
+//.toString("hh:mm tt")
             $(document).ready(function () {
                 $('#chat').click(function () {
                     if ( $( ".bootstrap" ).is( ":hidden" ) ) {
@@ -151,6 +175,16 @@
                     }
                 });
 
+
+
+                $('#enter').click(function () {
+                    var $nombre = $('#nombre').val();
+                    $('#nombre').fadeTo('fast', 0);
+                    $(this).fadeTo('fast', 0);
+                    if(!$('.name').length){
+                        $(".portlet-title").append($('<h4>').append($('<i>').addClass("portlet-title name").append($nombre)));
+                    }
+                });
 
             });
 
