@@ -24,7 +24,7 @@ public class webSocketHandler {
     private boolean isAdminOrAutor=false;
     private static int user=0;
     public static Map<Session, Boolean> usuariosAdmin = new HashMap<>();
-    public static Map<Session, Boolean> usuariosSimple = new HashMap<>();
+    public static Map<Session, String> usuariosSimple = new HashMap<>();
 
 
     @OnWebSocketConnect
@@ -67,11 +67,14 @@ public class webSocketHandler {
             if(mes[2].equals("1")){
                 isadmin=true;
                 usuariosAdmin.put(usuario,isadmin);
-                Main.createHtmlMessageFromSender(message, isadmin);
+
+                    Main.createHtmlMessageFromSender(message, isadmin);
 
             }else {
-                usuariosSimple.put(usuario,isadmin);
+                usuariosSimple.put(usuario,mes[0]);
+                System.out.println("Was there 1");
                 Main.createHtmlMessageFromSender(message, isadmin);
+
             }
 
 

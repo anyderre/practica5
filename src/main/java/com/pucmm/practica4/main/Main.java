@@ -728,19 +728,32 @@ public class Main {
 
     public static void createHtmlMessageFromSender(String message, boolean isAdmin) {
         String [] mes= message.split("~");
+        System.out.println("was there2");
+        System.out.println("lista de usuarios "+usuariosConectados.size());
             if(isAdmin){
                 try{
-                    usuariosConectados.get(mes[0]).getRemote().sendString(p(message).render());
-                    usuariosConectados.get(mes[3]).getRemote().sendString(p(message).render());
-                }catch (IOException ex){
+                    System.out.println("Was there 8");
+                    usuariosConectados.get(mes[0]).getRemote().sendString(String.valueOf(new JSONObject()
+                        .put("userMessage", message)
+                            .put("userList", webSocketHandler.usuariosSimple.values())
+                    ));
+
+                    System.out.println("Was there 9");
+                    if(!mes[3].equals("")){
+                         usuariosConectados.get(mes[3]).getRemote().sendString(p(message).render());
+                    }
+                }catch (Exception ex){
                     ex.printStackTrace();
                 }
             }else{
+                System.out.println("Was there 3");
                 if(webSocketHandler.usuariosAdmin.size()!=0){
+                    System.out.println("Was there 5");
                     if(mes[3].equals("")){
-                        for(Map.Entry<org.eclipse.jetty.websocket.api.Session, Boolean> usuariosConectados: webSocketHandler.usuariosAdmin.entrySet()){
+                        System.out.println("Was there 6");
+                        for(Map.Entry<org.eclipse.jetty.websocket.api.Session, Boolean> usuariosEnLinea: webSocketHandler.usuariosAdmin.entrySet()){
                             try{
-                                usuariosConectados.getKey().getRemote().sendString(p(message).render());
+                                usuariosEnLinea.getKey().getRemote().sendString(p(message).render());
                             }catch (IOException ex){
                                 ex.printStackTrace();
                             }

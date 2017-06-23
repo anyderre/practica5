@@ -10,6 +10,7 @@
 </style>
 <div class="row">
     <div class="col-md-3">
+        <h2>Usuarios conectados</h2>
         <ul class="list-group userlist">
 
         </ul>
@@ -86,24 +87,9 @@
 
 </div>
 
-<script type="text/javascript" src="/js/websocket.js"></script>
-<script type="text/javascript">
-    $(document).ready(function () {
-        $('#Conectar').click(function () {
-            var $c= $('#user').val()
-            var isAdminOrAutor=1;
-            $('.name').append($c);
-            alert($('#user').val());
-            webSocket.send($c+"~"+'hello'+'~'+isAdminOrAutor);
 
-            updateChat()
-        });
-    });
-function updateChat(msg) {
-    var data = JSON.parse(msg.data);
-    //insert("chat", data.userMessage);
-    return data;
-}
+<script type="text/javascript" src="/js/websocketAdmin.js">
+
 
 </script>
 <#include "footer.ftl">

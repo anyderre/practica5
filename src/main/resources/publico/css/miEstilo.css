@@ -218,3 +218,6 @@ body{
     height:100%;
     border-left:1px solid gray;
 }
+.userlist{
+    margin-left: 25px;
+}
