@@ -1,5 +1,6 @@
 package com.pucmm.practica4.main;
 
+import org.eclipse.jetty.websocket.server.WebSocketHandler;
 import org.json.JSONObject;
 import com.pucmm.practica4.WebSocket.webSocketHandler;
 import com.pucmm.practica4.entidades.*;
@@ -24,12 +25,14 @@ import static j2html.TagCreator.*;
 import static java.lang.Class.forName;
 import static spark.Spark.*;
 //import static spark.debug.DebugScreen.enableDebugScreen;
+//import static org.eclipse.jetty.websocket.api.Session.*;
 
 /**
  * Created by john on 03/06/17.
  */
 public class Main {
-    public static List<org.eclipse.jetty.websocket.api.Session> usuariosConectados = new ArrayList<>();
+    //public static List<org.eclipse.jetty.websocket.api.Session> usuariosConectados = new ArrayList<>();
+    public static Map<String, org.eclipse.jetty.websocket.api.Session> usuariosConectados = new HashMap<>();
 
     public static void main(String[] args)throws SQLException {
 
@@ -682,13 +685,21 @@ public class Main {
         });
 //_____________________________________________Mensaje Servidor_______________________________________
 
-
-        get("/enviarMensaje",(request, response) ->{
-            String mensaje = request.queryParams("mensaje");
-            createHtmlMessageFromSender(mensaje, request.params("usuario"));
-            return "Enviando mensaje: "+mensaje;
+//---------------------------------------------------------------------------------------------------------------------
+        before("/espacio/administrador", (request, response) -> {
+            Usuario usuario = request.session(true).attribute("usuario");
+            if (usuario == null) {
+                response.redirect("/login");
+            }
         });
 
+        get("/espacio/administrador",(request, response) -> {
+            Map<String, Object> model = new HashMap<>();
+            Usuario usuario = request.session(true).attribute("usuario");
+            model.put("usuario", usuario);
+            model.put("titulo", "registrar articulo");
+            return new ModelAndView(model, "espacioAdmin.ftl");
+        },freeMarkerEngine);
 
     }  /**
      * Metodo para setear el puerto en Heroku
@@ -702,59 +713,57 @@ public class Main {
         return 4567; //return default port if heroku-port isn't set (i.e. on localhost)
     }
 
-    public static void createHtmlMessageFromSender(String sender, String message) {
-        for(org.eclipse.jetty.websocket.api.Session sesionConectada : usuariosConectados){
-            try{
-                sesionConectada.getRemote().sendString(p(message).render());
-            }catch (IOException ex){
-                ex.printStackTrace();
-            }
-        }
-
-    }
-
-    //Sends a message from one user to all users, along with a list of current usernames
-   /* public static void broadcastMessage(String sender, String message) {
-        userUsernameMap.keySet().stream().filter(org.eclipse.jetty.websocket.api.Session::isOpen).forEach(session -> {
+    public static void broadCastMessage(String message){
+        webSocketHandler.usuariosSimple.keySet().stream().filter(org.eclipse.jetty.websocket.api.Session::isOpen).forEach(session ->{
             try {
                 session.getRemote().sendString(String.valueOf(new JSONObject()
-                        .put("userMessage", createHtmlMessageFromSender(sender, message))
-                        .put("userlist", userUsernameMap.values())
+//                    .put("us")
+                        .put("userlist", webSocketHandler.usuariosSimple.values())
                 ));
-            } catch (Exception e) {
-                e.printStackTrace();
+            }catch (Exception ex){
+                ex.printStackTrace();
             }
         });
-    }*/
+    }
 
-    //Builds a HTML element with a sender-name, a message, and a timestamp,
-   /* private static String createHtmlMessageFromSender(String sender, String message) {
-        return article(
-                b(sender + " says:"),
-                span(attrs(".timestamp"), new SimpleDateFormat("HH:mm:ss").format(new Date())),
-                p(message)
-        ).render();
+    public static void createHtmlMessageFromSender(String message, boolean isAdmin) {
+        String [] mes= message.split("~");
+            if(isAdmin){
+                try{
+                    usuariosConectados.get(mes[0]).getRemote().sendString(p(message).render());
+                    usuariosConectados.get(mes[3]).getRemote().sendString(p(message).render());
+                }catch (IOException ex){
+                    ex.printStackTrace();
+                }
+            }else{
+                if(webSocketHandler.usuariosAdmin.size()!=0){
+                    if(mes[3].equals("")){
+                        for(Map.Entry<org.eclipse.jetty.websocket.api.Session, Boolean> usuariosConectados: webSocketHandler.usuariosAdmin.entrySet()){
+                            try{
+                                usuariosConectados.getKey().getRemote().sendString(p(message).render());
+                            }catch (IOException ex){
+                                ex.printStackTrace();
+                            }
+                        }
+                    }else{
+                        try{
+                            usuariosConectados.get(mes[0]).getRemote().sendString(p(message).render());
+                            usuariosConectados.get(mes[3]).getRemote().sendString(p(message).render());
+                        }catch (IOException ex){
+                            ex.printStackTrace();
+                        }
+                    }
+                }else{
+                    try{
+                        message= message+"~No hay Administrador en linea ahora";
+                        usuariosConectados.get(mes[0]).getRemote().sendString(p(message).render());
+                    }catch (IOException ex){
+                        ex.printStackTrace();
+                    }
+                }
 
-
-    }*/
-
-
-
-
-    /**
-     * Permite enviar un mensaje al cliente.
-     * Ver uso de la librería: https://j2html.com/
-     * @param mensaje
-     * @param color
-     */
-/*    public static void enviarMensajeAClientesConectados(String mensaje, String color){
-        for(org.eclipse.jetty.websocket.api.Session sesionConectada : usuariosConectados){
-            try {
-                sesionConectada.getRemote().sendString(p(mensaje).withClass(color).render());
-
-            } catch (IOException e) {
-                e.printStackTrace();
             }
-        }
-    }*/
+    }
+
+
 }
