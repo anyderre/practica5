@@ -1,5 +1,6 @@
 var webSocket;
 var reconnect = 5000;
+var sender="";
 
 function conectar() {
     // Web socket code
@@ -24,16 +25,17 @@ $(document).ready(function(){
     console.info("Iniciando Jquery - Ejemplo Webservices");
     $('#send').click(function () {
         var isAdminOrAutor = 0;
-        //<h4><i class="fa fa-circle text-green"></i> Jane Smith</h4>
         var $username=$('#nombre').val();
         var $message =$('#message').val()
-        webSocket.send($username+"~"+$message+"~"+isAdminOrAutor+"~");
+        webSocket.send($username+"~"+$message+"~"+isAdminOrAutor+"~"+sender);
+
 
     });
 });
 
 function recibirInformacionServidor(mensaje) {
-
+    sender = mensaje.data.split("~")[3];
+    alert(sender)
     console.log("Recibiendo informacion del Servidor");
     if($('#del').length){
         $('#del').hide()
@@ -66,3 +68,47 @@ setInterval(openSocket, reconnect);
 
 
 
+$(document).ready(function () {
+    var currentDate = new Date();
+    var day = currentDate.getDate();
+    var month = currentDate.getMonth() + 1;
+    var year = currentDate.getFullYear();
+
+    $('#fechaDehoy').append("<b>" + day + "/" + month + "/" + year + "</b>");
+});
+
+
+$(document).ready(function () {
+    $('#chat').click(function () {
+        if ( $( ".bootstrap" ).is( ":hidden" ) ) {
+            $(".bootstrap" ).slideDown( "slow" );
+            $(".line-content").fadeTo('slow', 0.5);
+        } else {
+            $( ".bootstrap" ).slideUp();
+            $(".line-content").fadeTo('slow',1);
+        }
+    });
+
+    $('#enter').click(function () {
+        var $nombre = $('#nombre').val();
+        if($nombre.length>=2){
+            $(".portlet-title").append($('<h4>').append($('<i>').addClass("portlet-title name").append($nombre)));
+            var isAdminOrAutor=0;
+            var mensajeFinal= $nombre+"~"+"connect-120lk./,o/h"+"~"+isAdminOrAutor;
+            webSocket.send(mensajeFinal);
+
+
+            $(this).fadeTo('fast',0);
+            $("#nombre").fadeTo('fast',0);
+
+
+        }else{
+            $("#nombre").css({"border":"1px solid red"});
+            alert("You should enter a valid name!");
+        }
+
+    });
+
+
+
+});

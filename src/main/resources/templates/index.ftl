@@ -13,7 +13,7 @@
                     </div>
                     <div class="portlet-widgets">
                         <input style="color: black" type="text" id="nombre" placeholder="Nombre">
-                        <input type="button" class="btn btn-primary" id="enter" value="Enter"/>
+                        <input type="button" class="btn btn-primary" id="enter" value="Conectar"/>
                     </div>
                     <div class="clearfix"></div>
                 </div>
@@ -149,43 +149,6 @@
         </div>
         <script src='/js/websocket.js' type="text/javascript"></scriptsrc></script>
         <script src='/js/pagination.js' type="text/javascript"></scriptsrc></script>
-
-        <script type="text/javascript">
-
-            $(document).ready(function () {
-                var currentDate = new Date();
-                var day = currentDate.getDate();
-                var month = currentDate.getMonth() + 1;
-                var year = currentDate.getFullYear();
-
-                $('#fechaDehoy').append("<b>" + day + "/" + month + "/" + year + "</b>");
-            });
-//.toString("hh:mm tt")
-            $(document).ready(function () {
-                $('#chat').click(function () {
-                    if ( $( ".bootstrap" ).is( ":hidden" ) ) {
-                        $(".bootstrap" ).slideDown( "slow" );
-                        $(".line-content").fadeTo('slow', 0.5);
-                    } else {
-                        $( ".bootstrap" ).slideUp();
-                        $(".line-content").fadeTo('slow',1);
-                    }
-                });
-
-
-
-                $('#enter').click(function () {
-                    var $nombre = $('#nombre').val();
-                    $('#nombre').fadeTo('fast', 0);
-                    $(this).fadeTo('fast', 0);
-                    if(!$('.name').length){
-                        $(".portlet-title").append($('<h4>').append($('<i>').addClass("portlet-title name").append($nombre)));
-                    }
-                });
-
-            });
-
-        </script>
 
 
 <#include "footer.ftl">

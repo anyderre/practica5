@@ -29,8 +29,6 @@ public class webSocketHandler {
 
     @OnWebSocketConnect
     public void conectando(Session usuario){
-        //user++;
-       // Main.usuariosConectados.put(usuario, "user"+user);
         System.out.println("Conectando Usuario: "+usuario.getLocalAddress().getAddress().toString());
 
     }
@@ -43,7 +41,6 @@ public class webSocketHandler {
      */
     @OnWebSocketClose
     public void cerrandoConexion(Session usuario, int statusCode, String reason) {
-        System.out.println("Desconectando el usuario: "+usuario.getLocalAddress().getAddress().toString());
         Main.usuariosConectados.remove(usuario);
         usuariosAdmin.remove(usuario);
         usuariosSimple.remove(usuario);
@@ -56,26 +53,31 @@ public class webSocketHandler {
      */
     @OnWebSocketMessage
     public void recibiendoMensaje(Session usuario, String message) {
-        System.out.println("Recibiendo del cliente: "+usuario.getLocalAddress().getAddress().toString()+" - Mensaje"+message);
-
-            //Enviar un simple mensaje al cliente que mando al servidor..
-            //usuario.getRemote().sendString("Mensaje enviado al Servidor: "+message);
-            //mostrando a todos los clientes\
             String [] mes = message.split("~");
             Main.usuariosConectados.put(mes[0],usuario);
             boolean isadmin =false;
-            if(mes[2].equals("1")){
-                isadmin=true;
-                usuariosAdmin.put(usuario,isadmin);
-
+            if(mes[1].equals("connect-120lk./,o/h")){
+                if(mes[2].equals("1")) {
+                    isadmin = true;
+                    usuariosAdmin.put(usuario, isadmin);
                     Main.createHtmlMessageFromSender(message, isadmin);
-
-            }else {
-                usuariosSimple.put(usuario,mes[0]);
-                System.out.println("Was there 1");
-                Main.createHtmlMessageFromSender(message, isadmin);
-
+                }else{
+                    isadmin=false;
+                    usuariosSimple.put(usuario,mes[0]);
+                }
+            }else{
+                if(mes[2].equals("1")) {
+                    isadmin = true;
+                    usuariosAdmin.put(usuario, isadmin);
+                    if(Main.usuariosConectados.get(mes[3])!=null){
+                        Main.createHtmlMessageFromSender(message, isadmin);
+                    }
+                }else{
+                    isadmin=false;
+                    Main.createHtmlMessageFromSender(message, isadmin);
+                }
             }
+
 
 
 

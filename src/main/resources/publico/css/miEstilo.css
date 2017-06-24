@@ -221,3 +221,7 @@ body{
 .userlist{
     margin-left: 25px;
 }
+.badge{
+    color: white;
+    background-color: red;
+}

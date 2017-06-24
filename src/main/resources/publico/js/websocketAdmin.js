@@ -16,33 +16,81 @@ function openSocket() {
     }
 }
 
+var $sender=""
+$(document).ready(function () {
+    $('#userlist').on('click', ".list-group-item",function (e) {
+
+        var $messages =$(this).children('p').text();
+        $sender = $(this).contents().get(0).nodeValue;
+        $('.del').fadeTo('fast', 0);
+        $messages=$messages.split("~");
+        $(this).hide();
+        var mensajeFinal=""
+        $messages.forEach(function (mes) {
+            mensajeFinal=$sender+"~"+mes
+            recibirInformacionServidor(mensajeFinal);
+        })
+        // recibirInformacionServidor($messages)
+    });
+})
+
 
 $(document).ready(function () {
+    //event to connect
     $('#Conectar').click(function () {
-        var $c= $('#user').val()
+        var $username= $('#user').val();
         var isAdminOrAutor=1;
-        $('.name').append($c);
+        $('.name').append($username);
         var $name="";
         $('.list-group-item').click(function () {
             $name=$(this).val();
-        })
-        webSocket.send($c+"~"+"dimelo papa"+'~'+isAdminOrAutor+"~"+$name);
+        });
+        var mensajeFinal= $username+"~"+"connect-120lk./,o/h"+"~"+isAdminOrAutor;
+        webSocket.send(mensajeFinal);
+
+        $(this).fadeTo('fast',0);
+
+
+    });
+
+
+    //sending message
+    $('#send').click(function () {
+        var $message= $('textarea#message').val();
+
+        $('textarea#message').val('');
+        var $nombre = $('#user').val();
+        var isAdminOrAutor=1;
+        var mensajeFinal= $nombre+"~"+$message+"~"+isAdminOrAutor+"~"+$sender;
+        webSocket.send(mensajeFinal);
+
     });
 });
 
 
 function updateChat(msg) {
     var data = JSON.parse(msg.data);
-    //insert("chat", data.userMessage);
-    alert(data.userMessage);
-   // recibirInformacionServidor(msg.userMessage);
-    if(data.userList.length!==0){
+
+    if(data.userList){
+        var count=1
         data.userList.forEach(function (user) {
             $(".userlist").append(
-                $('<li>').addClass('list-group-item').append(user))
+                $('<li>').addClass('list-group-item').append(user).attr('id',"user"+count).append(
+                    $('<span>').addClass('badge').append(1).css({'background-color':"red", "color":"white"})))
+            count++;
         });
     }
+    if(data.userMessage){
+        var count=1;
+        data.userMessage.forEach(function (mes) {
 
+            $('#user'+count).append($('<p>').append(mes).css({"display":"none"}));
+            count ++;
+        }) ;
+    }
+    if(data.userMes){
+        recibirInformacionServidor(data.userMes);
+    }
 
     return data;
 }
@@ -55,7 +103,7 @@ function recibirInformacionServidor(mensaje) {
     var dt = new Date();
     var time = dt.getHours() + ":" + dt.getMinutes() + ":" + dt.getSeconds();
     $('.portlet-body').append(
-        $('<div>').addClass('row').append(
+        $('<div>').addClass('row del').append(
             $('<div>').addClass('col-lg-12').append(
                 $('<div>').addClass('media').append(
                     $('<a>').addClass('pull-left').append(
@@ -72,9 +120,7 @@ function recibirInformacionServidor(mensaje) {
         ),$('<hr>')
     )
     $('textarea#message').val('');
-    if(mensaje.split('~').length===5){
-        alert(mensaje.split("~")[4]);
-    }
+
 }
 
 

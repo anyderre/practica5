@@ -1,6 +1,7 @@
 package com.pucmm.practica4.main;
 
 import org.eclipse.jetty.websocket.server.WebSocketHandler;
+import org.json.JSONException;
 import org.json.JSONObject;
 import com.pucmm.practica4.WebSocket.webSocketHandler;
 import com.pucmm.practica4.entidades.*;
@@ -33,6 +34,7 @@ import static spark.Spark.*;
 public class Main {
     //public static List<org.eclipse.jetty.websocket.api.Session> usuariosConectados = new ArrayList<>();
     public static Map<String, org.eclipse.jetty.websocket.api.Session> usuariosConectados = new HashMap<>();
+    public static Map<String, String> messages = new HashMap<>();
 
     public static void main(String[] args)throws SQLException {
 
@@ -728,40 +730,58 @@ public class Main {
 
     public static void createHtmlMessageFromSender(String message, boolean isAdmin) {
         String [] mes= message.split("~");
-        System.out.println("was there2");
-        System.out.println("lista de usuarios "+usuariosConectados.size());
-            if(isAdmin){
-                try{
-                    System.out.println("Was there 8");
-                    usuariosConectados.get(mes[0]).getRemote().sendString(String.valueOf(new JSONObject()
-                        .put("userMessage", message)
-                            .put("userList", webSocketHandler.usuariosSimple.values())
-                    ));
 
-                    System.out.println("Was there 9");
-                    if(!mes[3].equals("")){
-                         usuariosConectados.get(mes[3]).getRemote().sendString(p(message).render());
+
+            if(isAdmin){
+                if(mes[1].equals("connect-120lk./,o/h")){
+                    try{
+                        usuariosConectados.get(mes[0]).getRemote().sendString(String.valueOf(new JSONObject()
+                                .put("userMessage", messages.values())
+                                .put("userList",messages.keySet())
+                                //messages.rem
+                        ));
+                    }catch (Exception ex){
+                        ex.printStackTrace();
                     }
-                }catch (Exception ex){
-                    ex.printStackTrace();
+                }else{
+                    try {
+                        usuariosConectados.get(mes[3]).getRemote().sendString(message);
+                        usuariosConectados.get(mes[0]).getRemote().sendString(String.valueOf(new JSONObject()
+                                .put("userMes", message)
+                        ));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
                 }
+
             }else{
-                System.out.println("Was there 3");
+
                 if(webSocketHandler.usuariosAdmin.size()!=0){
-                    System.out.println("Was there 5");
+
+                    System.out.println("Tamano lista admin "+webSocketHandler.usuariosAdmin.size());
                     if(mes[3].equals("")){
-                        System.out.println("Was there 6");
-                        for(Map.Entry<org.eclipse.jetty.websocket.api.Session, Boolean> usuariosEnLinea: webSocketHandler.usuariosAdmin.entrySet()){
-                            try{
-                                usuariosEnLinea.getKey().getRemote().sendString(p(message).render());
-                            }catch (IOException ex){
-                                ex.printStackTrace();
-                            }
+                        if(messages.get(mes[0])==null){
+                            String theMessages="";
+                            theMessages =  mes[1];
+                            messages.put(mes[0],theMessages);
+                        }else {
+                            String theMessages= messages.get(mes[0]);
+                            theMessages =  theMessages+"~"+mes[1];
+                            messages.put(mes[0],theMessages);
                         }
+                        try {
+                            usuariosConectados.get(mes[0]).getRemote().sendString(message);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+
                     }else{
+
                         try{
-                            usuariosConectados.get(mes[0]).getRemote().sendString(p(message).render());
-                            usuariosConectados.get(mes[3]).getRemote().sendString(p(message).render());
+                            usuariosConectados.get(mes[0]).getRemote().sendString(message);
+                            usuariosConectados.get(mes[3]).getRemote().sendString(message);
                         }catch (IOException ex){
                             ex.printStackTrace();
                         }
@@ -769,10 +789,22 @@ public class Main {
                 }else{
                     try{
                         message= message+"~No hay Administrador en linea ahora";
-                        usuariosConectados.get(mes[0]).getRemote().sendString(p(message).render());
-                    }catch (IOException ex){
+
+                        if(messages.get(mes[0])==null){
+                            String theMessages="";
+                            theMessages =  mes[1];
+                            messages.put(mes[0],theMessages);
+                        }else {
+                            String theMessages= messages.get(mes[0]);
+                            theMessages =  theMessages+"~"+mes[1];
+                            messages.put(mes[0],theMessages);
+                        }
+                        usuariosConectados.get(mes[0]).getRemote().sendString(message);
+
+                }catch (Exception ex){
                         ex.printStackTrace();
                     }
+
                 }
 
             }

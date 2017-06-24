@@ -11,7 +11,7 @@
 <div class="row">
     <div class="col-md-3">
         <h2>Usuarios conectados</h2>
-        <ul class="list-group userlist">
+        <ul class="list-group userlist" id="userlist">
 
         </ul>
     </div>
